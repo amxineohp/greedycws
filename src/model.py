@@ -15,7 +15,8 @@ Sentence = namedtuple('Sentence',['score','score_expr','LSTMState','y','prevStat
 class CWS (object):
     def __init__(self,Cemb,character_idx_map,options):
         model = dy.Model()
-        self.trainer = dy.MomentumSGDTrainer(model,options['lr'],options['momentum'],options['edecay']) # we use Momentum SGD
+        #self.trainer = dy.MomentumSGDTrainer(model,options['lr'],options['momentum'],options['edecay']) # we use Momentum SGD
+        self.trainer = dy.MomentumSGDTrainer(model,options['lr'],options['momentum']) # we use Momentum SGD
         self.params = self.initParams(model,Cemb,options)
         self.options = options
         self.model = model
@@ -48,7 +49,7 @@ class CWS (object):
         params['word_score_U'] = model.add_parameters(options['word_dims'])
         params['predict_W'] = model.add_parameters((options['word_dims'],options['nhiddens']))
         params['predict_b'] = model.add_parameters(options['word_dims'])
-        for wlen in xrange(1,options['max_word_len']+1):
+        for wlen in range(1,options['max_word_len']+1):
             params['reset_gate_W'].append(model.add_parameters((wlen*options['char_dims'],wlen*options['char_dims'])))
             params['reset_gate_b'].append(model.add_parameters(wlen*options['char_dims']))
             params['com_W'].append(model.add_parameters((options['word_dims'],wlen*options['char_dims'])))
@@ -101,7 +102,7 @@ class CWS (object):
 
         for idx, _ in enumerate(char_seq,1): # from left to right, character by character
             now = None
-            for wlen in xrange(1,min(idx,self.options['max_word_len'])+1): # generate word candidate vectors
+            for wlen in range(1,min(idx,self.options['max_word_len'])+1): # generate word candidate vectors
                 # join segmentation sent + word
                 word = self.word_repr(char_seq[idx-wlen:idx], cembs[idx-wlen:idx])
                 sent = agenda[idx-wlen]
@@ -178,9 +179,9 @@ def dy_train_model(
     word_proportion = 0.5
 ):
     options = locals().copy()
-    print 'Model options:'
-    for kk,vv in options.iteritems():
-        print '\t',kk,'\t',vv
+    print('Model options:')
+    for kk,vv in options.items():
+        print('\t',kk,'\t',vv)
 
     Cemb, character_idx_map = initCemb(char_dims,train_file,pre_trained)
 
@@ -214,29 +215,31 @@ def dy_train_model(
         cws.use_word_embed(known_words)
 
     n = len(char_seq)
-    print 'Total number of training instances:',n
+    print('Total number of training instances:',n)
     
-    print 'Start training model'
+    print('Start training model')
     start_time = time.time()
     nsamples = 0
-    for eidx in xrange(max_epochs):
-        idx_list = range(n)
+    for eidx in range(max_epochs):
+        idx_list = list(range(n))
         if shuffle_data:
             np.random.shuffle(idx_list)
 
         for idx in idx_list:
             loss = cws.backward(char_seq[idx],truth[idx])
             if np.isnan(loss):
-                print 'somthing went wrong, loss is nan.'
+                print('somthing went wrong, loss is nan.')
                 return
             nsamples += 1
             if nsamples % batch_size == 0:
-                cws.trainer.update(1.)
+                #cws.trainer.update(1.)
+                cws.trainer.update()
 
-        cws.trainer.update_epoch(1.)
+        #cws.trainer.update_epoch(1.)
+        cws.trainer.learning_rate /= (1 - options['edecay'])
         end_time = time.time()
-        print 'Trained %s epoch(s) (%d samples) took %.lfs per epoch'%(eidx+1,nsamples,(end_time-start_time)/(eidx+1))       
+        print('Trained %s epoch(s) (%d samples) took %.lfs per epoch'%(eidx+1,nsamples,(end_time-start_time)/(eidx+1)))       
         test(cws,dev_file,'../result/dev_result%d'%(eidx+1))
         os.system('python score.py %s %d %d'%(dev_file,eidx+1,eidx+1))
         cws.save('epoch%d'%(eidx+1))
-        print 'Current model saved'
+        print('Current model saved')

@@ -20,6 +20,8 @@ if __name__ == "__main__":
             max_sent_len = 60,
             shuffle_data = True,
             train_file = '../data/pku_train',
+            #train_file = '../data/pku_train1',
+            #train_file = '../data/pku_test',   # dev/test in train/test mode.
             dev_file = '../data/pku_test',   # dev/test in train/test mode.
             pre_trained = None,
             lr = 0.2,

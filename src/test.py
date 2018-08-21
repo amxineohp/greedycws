@@ -13,10 +13,12 @@ def test(cws,filename,output_path):
         return res
 
     char_seqs = prepareData(cws.character_idx_map,filename,test=True)
-    fo = open(output_path,'wb')
+    #fo = open(output_path,'wb')
+    fo = open(output_path,'w')
     seq_idx = 0 
     for line in open(filename).readlines():
-        sent = unicode(line.decode('utf8')).split()
+        #sent = str(line.decode('utf8')).split()
+        sent = line.split()
         Left = 0
         output_sent = []
         for idx,word in enumerate(sent):
@@ -31,6 +33,7 @@ def test(cws,filename,output_path):
             words = seg(char_seqs[seq_idx],list(''.join(sent[Left:])))
             seq_idx += 1
             output_sent.extend(words)
-        output_sent = '  '.join(output_sent).encode('utf8')+'\r\n'
+        #output_sent = '  '.join(output_sent).encode('utf8')+'\r\n'
+        output_sent = '  '.join(output_sent)+'\r\n'
         fo.write(output_sent)
     fo.close()

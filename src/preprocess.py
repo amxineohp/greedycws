@@ -5,7 +5,8 @@ import sys
 Maximum_Word_Length = 4
 
 def OT(str):
-    print str.encode('utf8')
+    #print(str.encode('utf8'))
+    print(str)
 
 def strQ2B(ustring):
     """全角转半角"""
@@ -17,40 +18,42 @@ def strQ2B(ustring):
         elif (inside_code >= 65281 and inside_code <= 65374): #全角字符（除空格）根据关系转化
             inside_code -= 65248
         
-        rstring += unichr(inside_code)
+        rstring += chr(inside_code)
     return rstring
 
 def preprocess(path, longws= set()):
-    rNUM = u'(-|\+)?\d+((\.|·)\d+)?%?'
-    rENG = u'[A-Za-z_.]+'
+    rNUM = '(-|\+)?\d+((\.|·)\d+)?%?'
+    rENG = '[A-Za-z_.]+'
     word_count, char_count, sent_count = 0, 0, 0
     count_longws = 0
     with open(path,'r') as f:
         sents = []
         for line in f.readlines():
-            sent = strQ2B(unicode(line.decode('utf8')).strip()).split()
+            #sent = strQ2B(str(line.decode('utf8')).strip()).split()
+            sent = strQ2B(str(line).strip()).split()
             new_sent = []
             for word in sent:
-                word = re.sub(u'\s+','',word,flags =re.U)
-                word = re.sub(rNUM,u'0',word,flags= re.U)
-                word = re.sub(rENG,u'X',word)
+                word = re.sub('\s+','',word,flags =re.U)
+                word = re.sub(rNUM,'0',word,flags= re.U)
+                word = re.sub(rENG,'X',word)
                 if word in longws:
                     count_longws+=1
-                    word = u'L'
+                    word = 'L'
                 new_sent.append(word)
                 char_count+=len(word)
                 word_count+=1
             sents.append(new_sent)
             sent_count+=1
-    print  path
-    print 'long words count', count_longws
-    print  'sents %d, words %d chars %d' %(sent_count, word_count, char_count)
+    print(path)
+    print('long words count', count_longws)
+    print('sents %d, words %d chars %d' %(sent_count, word_count, char_count))
     return sents
 
 def write(filename, sents):
     f= open(filename,'w')
     for sent in sents:
-        f.write('  '.join(sent).encode('utf8')+'\r\n')
+        #f.write('  '.join(sent).encode('utf8')+'\r\n')
+        f.write('  '.join(sent)+'\r\n')
     f.close() 
 
 def check(sents): # get those words longer than our maximum word length setting
@@ -65,7 +68,7 @@ def check(sents): # get those words longer than our maximum word length setting
                 longwords.append(word)
     for word in set(longwords):
         OT(word)
-    print 'len>%d words count'%Maximum_Word_Length,count,100.0*count/all_count,'%'
+    print('len>%d words count'%Maximum_Word_Length,count,100.0*count/all_count,'%')
     return set(longwords)
 
 if __name__ == "__main__":
