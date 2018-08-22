@@ -24,7 +24,7 @@ class CWS (object):
         self.known_words = None
     
     def load(self,filename):
-        self.model.load(filename)
+        self.model.populate(filename)
 
     def save(self,filename):
         self.model.save(filename)
@@ -96,6 +96,7 @@ class CWS (object):
             cembs = [ dy.dropout(dy.lookup(self.params['embed'],char),self.options['dropout_rate']) for char in char_seq ]
         else:
             cembs = [dy.lookup(self.params['embed'],char) for char in char_seq ]
+            #cembs = [ dy.dropout(dy.lookup(self.params['embed'],char),self.options['dropout_rate']) for char in char_seq ]
 
         start_agenda = init_sentence
         agenda = [start_agenda]
@@ -187,10 +188,10 @@ def dy_train_model(
 
     cws = CWS(Cemb,character_idx_map,options)
 
-    if load_params is not None:
-        cws.load(load_params)
-        test(cws, dev_file, 'result')
-        return
+#    if load_params is not None:
+#        cws.load(load_params)
+#        test(cws, dev_file, 'result')
+#        return
 
     char_seq, _ , truth = prepareData(character_idx_map,train_file)
     
@@ -209,10 +210,15 @@ def dy_train_model(
         known_word_count  = int(word_proportion*len(word_counter))
         known_words =  dict(word_counter.most_common()[:known_word_count])
         idx = 0
-        for word in known_words:
+        for word,cnt in sorted(known_words.items()):
             known_words[word] = idx
             idx+=1
         cws.use_word_embed(known_words)
+    if load_params is not None:
+        cws.load(load_params)
+        #cws.known_words=None
+        test(cws, dev_file, 'result')
+        return
 
     n = len(char_seq)
     print('Total number of training instances:',n)
@@ -236,7 +242,7 @@ def dy_train_model(
                 cws.trainer.update()
 
         #cws.trainer.update_epoch(1.)
-        cws.trainer.learning_rate /= (1 - options['edecay'])
+        cws.trainer.learning_rate /= (1 + options['edecay']*eidx)
         end_time = time.time()
         print('Trained %s epoch(s) (%d samples) took %.lfs per epoch'%(eidx+1,nsamples,(end_time-start_time)/(eidx+1)))       
         test(cws,dev_file,'../result/dev_result%d'%(eidx+1))

@@ -31,7 +31,8 @@ def initCemb(ndims,train_file,pre_trained,thr = 5.):
     Cemb = np.zeros(shape=(len(character_vecs)+1,ndims))
     idx = 1
     character_idx_map = dict()
-    for character in character_vecs:
+    for character,_ in sorted(character_vecs.items()):
+    #for character in character_vecs:
         Cemb[idx] = character_vecs[character]
         character_idx_map[character] = idx
         idx+=1
