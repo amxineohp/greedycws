@@ -21,8 +21,8 @@ if __name__ == "__main__":
             margin_loss_discount = 0.2,
             max_sent_len = 60,
             shuffle_data = True,
-            train_file = '../data/pku_debug',
-            #train_file = '../data/pku_train',
+            #train_file = '../data/pku_debug',
+            train_file = '../data/pku_train',
             #train_file = '../data/pku_train1',
             #dev_file = '../data/pku_test',   # dev/test in train/test mode.
             dev_file = '../data/pku_dev',   # dev/test in train/test mode.
