@@ -1,6 +1,6 @@
 # I have not reproduced the result in the paper if anyone reproduced pls let me know (ENV:pytho3 and dynet 2.0 PKU) 
 
-### ENV:pytho3 and dynet 2.0 PKU
+### ENV:python3 and dynet 2.0 PKU
 
 - no pre_train score is 0.954 for pku_dev and 0.947 for pku_test
 
